@@ -1,7 +1,7 @@
 import lldb
 
 CALL_INSTRUCTIONS = [
-    "call"
+    "callq",
 ]
 
 def step_until_call(debugger, command, result, internal_dict):
@@ -12,16 +12,16 @@ def step_until_call(debugger, command, result, internal_dict):
     thread = target.GetProcess().GetSelectedThread()
 
     while True:
-        thread.StepOver()
+        thread.StepInstruction(True)
         pc = thread.GetFrameAtIndex(0).GetPCAddress()
-        inst = target.ReadInstruction(pc, 1)[0]
-        inst_name = inst.GetMnemonic().lower()
+        inst = target.ReadInstructions(pc, 1)[0]
+        inst_name = inst.GetMnemonic(target).lower()
         if inst_name in CALL_INSTRUCTIONS:
-            debugger.HandleCommand(f'disassemble -s {pc.GetLoadAddress()} -c 1')
+            debugger.HandleCommand(f'disassemble -s {pc.GetLoadAddress(target)} -c 1')
             return
 
 
-def _lldb_init_module(debugger, internal_dict):
+def __lldb_init_module(debugger, internal_dict):
     """
     Initialize the module and add the command to LLDB.
     """

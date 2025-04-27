@@ -4,7 +4,7 @@ CALL_INSTRUCTIONS = [
     "callq",
 ]
 
-def step_until_call(debugger, command, result, internal_dict):
+def step_until_call(debugger: lldb.SBDebugger, command, result, internal_dict):
     """
     Step until a branch instruction is reached.
     """

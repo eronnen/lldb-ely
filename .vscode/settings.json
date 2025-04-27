@@ -1,0 +1,5 @@
+{
+    "python.analysis.extraPaths": [
+        "/home/ely/git/llvm-project/build/tools/lldb/bindings/python/",
+    ],
+}

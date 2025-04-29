@@ -5,7 +5,8 @@ def step_until_call(debugger: lldb.SBDebugger, command: str, exe_ctx: lldb.SBExe
     Step until a branch instruction is reached.
     """
     target: lldb.SBTarget = debugger.GetSelectedTarget()
-    thread: lldb.SBThread = target.GetProcess().GetSelectedThread()
+    process: lldb.SBProcess = target.GetProcess()
+    thread: lldb.SBThread = process.GetSelectedThread()
 
     while True:
         thread.StepInstruction(True)
@@ -17,7 +18,11 @@ def step_until_call(debugger: lldb.SBDebugger, command: str, exe_ctx: lldb.SBExe
 
         flow_kind = inst.GetControlFlowKind(target)
         if lldb.eInstructionControlFlowKindCall == flow_kind:
-            debugger.HandleCommand(f'disassemble -s {pc.GetLoadAddress(target)} -c 1')
+            # Exit cleanly by broadcasting the last stop event
+            stop_id: int = process.GetStopID()
+            event: lldb.SBEvent = process.GetStopEventForStopID(stop_id)
+            broadcaster: lldb.SBBroadcaster = process.GetBroadcaster()
+            broadcaster.BroadcastEvent(event)
             return
 
 
@@ -25,4 +30,4 @@ def __lldb_init_module(debugger, internal_dict):
     """
     Initialize the module and add the command to LLDB.
     """
-    debugger.HandleCommand('command script add -f step_until_call.step_until_call nb')
+    debugger.HandleCommand('command script add -f step_until_call.step_until_call_old nb')

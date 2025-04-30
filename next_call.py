@@ -8,25 +8,21 @@ class NextCall(object):
     def __init__(self, thread_plan: lldb.SBThreadPlan, dict: dict):
         self._thread_plan = thread_plan
         self._thread_plan_stepover = None
-        if not self._should_step_in():
-            self._queue_next_plan()
         self._reason = "Reached call instruction"
+        self._queue_next_plan()
 
-    def _should_step_in(self):
-        return False
+    def _should_step_over(self):
+        return True
 
     def _queue_next_plan(self):
-        frame: lldb.SBFrame = self._thread_plan.GetThread().GetFrameAtIndex(0)
-        pc: lldb.SBAddress = frame.GetPCAddress()
-        target: lldb.SBTarget = self._thread_plan.GetThread().GetProcess().GetTarget()
-        inst: lldb.SBInstruction = target.ReadInstructions(pc, 1)[0]
-        self._thread_plan_stepover = self._thread_plan.QueueThreadPlanForStepOverRange(pc, inst.GetByteSize())
+        self._thread_plan_stepover = self._thread_plan.QueueThreadPlanForStepSingleInstruction(self._should_step_over())
 
     def explains_stop(self, _event):
-        return self._thread_plan_stepover is None and self._thread_plan.GetThread().GetStopReason() == lldb.eStopReasonTrace
+        # return self._thread_plan_stepover is None and self._thread_plan.GetThread().GetStopReason() == lldb.eStopReasonTrace
+        return False
 
     def should_stop(self, _event):
-        if self._thread_plan_stepover is not None and not self._thread_plan_stepover.IsPlanComplete():
+        if not self._thread_plan_stepover.IsPlanComplete():
             return False
 
         frame: lldb.SBFrame = self._thread_plan.GetThread().GetFrameAtIndex(0)
@@ -54,8 +50,8 @@ class NextCall(object):
 
 
 class NextCallWithStepIn(NextCall):
-    def _should_step_in(self):
-        return True
+    def _should_step_over(self):
+        return False
 
 
 def __lldb_init_module(debugger, internal_dict):

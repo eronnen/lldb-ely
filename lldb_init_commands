@@ -5,3 +5,4 @@ command alias rustinit command source ~/mygit/lldb-ely/lldb_rust_commands
 settings set stop-disassembly-display no-source
 settings set target.process.thread.step-in-avoid-nodebug false
 settings set symbols.synthetic-symbols-name-style file-address
+settings set show-statusline false

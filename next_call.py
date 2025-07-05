@@ -15,7 +15,7 @@ class NextCall(object):
         return True
 
     def _queue_next_plan(self):
-        self._thread_plan_stepover = self._thread_plan.QueueThreadPlanForStepSingleInstruction(self._should_step_over())
+        self._thread_plan_stepover = self._thread_plan.QueueThreadPlanForStepSingleInstruction(self._should_step_over(), lldb.SBError())
 
     def explains_stop(self, _event):
         # return self._thread_plan_stepover is None and self._thread_plan.GetThread().GetStopReason() == lldb.eStopReasonTrace
